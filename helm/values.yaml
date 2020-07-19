@@ -1,0 +1,22 @@
+env: dev
+image: "forkitstudio/dockerpump:latest"
+replicas: 1
+port: 10000
+targetPort: 5000
+
+docker:
+  host: "unix://var/run/docker.sock"
+registry:
+#  source: "specify_source_fqdn:5000"
+  target: "specify_target_fqdn:5000"
+
+#affinity:
+#  nodeAffinity:
+#    requiredDuringSchedulingIgnoredDuringExecution:
+#      nodeSelectorTerms:
+#      - matchExpressions:
+#        - key: somelabel
+#          operator: In
+#          values:
+#          - "true"
+

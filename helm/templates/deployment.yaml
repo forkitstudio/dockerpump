@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dr-pump
+  labels:
+    k8s-app: dr-pump
+    app-env: {{ .Values.env }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      k8s-app: dr-pump
+      app-env: {{ .Values.env }}
+  template:
+    metadata:
+      labels:
+        k8s-app: dr-pump
+        app-env: {{ .Values.env }}
+    spec:
+{{- include "app.module-affinity" .Values.affinity | indent 6 }}
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: pump
+        image: {{ .Values.image }}
+        imagePullPolicy: Always
+        env:
+{{- if .Values.registry.source }}
+        - name: DOCKER_REGISTRY_SOURCE_SERVER
+          value: {{ .Values.registry.source | quote }}
+{{- end }}
+        - name: DOCKER_REGISTRY_TARGET_SERVER
+          value: {{ .Values.registry.target | quote }}
+        - name: DOCKER_HOST
+          value: {{ .Values.docker.host | quote }}
+        volumeMounts:
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+#            ephemeral-storage: "10Mi"
+          limits:
+            cpu: 200m
+            memory: 100Mi
+#            ephemeral-storage: "10Mi"
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            port: {{ .Values.targetPort }}
+            path: /api/health
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            port: {{ .Values.targetPort }}
+            path: /api/health
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 3
+      volumes:
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+

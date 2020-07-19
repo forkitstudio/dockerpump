@@ -1,0 +1,14 @@
+apiVersion: v1
+name: dockerpump
+version: 0.0.1
+appVersion: 0.0.1
+description: Docker Pump
+keywords:
+- docker
+- docker registry
+sources:
+-
+maintainers:
+- name: Sergey Ogoltsov
+  email: sogoltsov@google.com
+engine: gotpl
